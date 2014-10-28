@@ -29,6 +29,8 @@ import com.google.common.collect.ImmutableList;
 import java.util.List;
 import java.util.concurrent.Callable;
 
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import javax.inject.Inject;
 
 import static com.google.common.base.Preconditions.checkNotNull;
@@ -37,13 +39,16 @@ import static com.google.common.base.Preconditions.checkState;
 public abstract class ExecutorManager<T> implements ObservableExecutor<T>,
         CacheInvalidationListener<T> {
 
+    @Nonnull
     private final SyncExecutor mSyncExecutor;
+    @Nonnull
     private final ExampleDescription mExampleDescription;
 
     @Inject
-    public ExecutorManager(SyncExecutor syncExecutor, ExampleDescription exampleDescription) {
-        mSyncExecutor = syncExecutor;
-        mExampleDescription = exampleDescription;
+    public ExecutorManager(@Nonnull SyncExecutor syncExecutor,
+                           @Nonnull ExampleDescription exampleDescription) {
+        mSyncExecutor = checkNotNull(syncExecutor);
+        mExampleDescription = checkNotNull(exampleDescription);
     }
 
     private boolean mExecuting = false;
@@ -51,9 +56,8 @@ public abstract class ExecutorManager<T> implements ObservableExecutor<T>,
     protected ListenerCallback<T> mListener;
 
     @Override
-    public void register(ListenerCallback<T> listener) {
+    public void register(@Nonnull ListenerCallback<T> listener) {
         checkNotNull(listener);
-        checkState(mListener == null);
         mListener = listener;
 
         mExampleDescription.register(getCacheKey(), this);
@@ -88,7 +92,7 @@ public abstract class ExecutorManager<T> implements ObservableExecutor<T>,
                 },
                 new SyncExecutor.OnError() {
                     @Override
-                    public void except(Exception e) {
+                    public void except(@Nonnull Exception e) {
                         mExecuting = false;
                         if (mListener != null) {
                             mListener.onError(e);
@@ -102,7 +106,7 @@ public abstract class ExecutorManager<T> implements ObservableExecutor<T>,
     }
 
     @Override
-    public void onChanged(T object) {
+    public void onChanged(@Nonnull T object) {
         if (mListener != null) {
             mListener.onNewData(object);
         }
@@ -113,27 +117,32 @@ public abstract class ExecutorManager<T> implements ObservableExecutor<T>,
         loadData();
     }
 
+    @Nonnull
     protected abstract T execute() throws Exception;
 
+    @Nonnull
     protected abstract CacheKey<T> getCacheKey();
 
-    protected T execute(String nextToken) throws Exception {
+    @Nonnull
+    protected T execute(@Nullable String nextToken) throws Exception {
         throw new UnsupportedOperationException("Not supported operation");
     }
 
-    protected String getNextToken(T cache) {
+    @Nullable
+    protected String getNextToken(@Nonnull T cache) {
         return null;
     }
 
-    protected boolean hasMore(T cache) {
+    protected boolean hasMore(@Nonnull T cache) {
         return false;
     }
 
-    protected T mergeData(T previous, T moreData) {
+    @Nonnull
+    protected T mergeData(@Nonnull T previous, @Nonnull T moreData) {
         throw new UnsupportedOperationException("Not supported operation");
     }
 
-    protected void afterExecute(T data) {
+    protected void afterExecute(@Nonnull T data) {
 
     }
 
@@ -184,7 +193,7 @@ public abstract class ExecutorManager<T> implements ObservableExecutor<T>,
         loadMore(nextToken);
     }
 
-    private void loadMore(final String nextToken) {
+    private void loadMore(@Nullable final String nextToken) {
         mExecuting = true;
         mSyncExecutor.executeAndReturn(
                 new Callable<T>() {
@@ -211,7 +220,7 @@ public abstract class ExecutorManager<T> implements ObservableExecutor<T>,
                 },
                 new SyncExecutor.OnError() {
                     @Override
-                    public void except(Exception e) {
+                    public void except(@Nonnull Exception e) {
                         mExecuting = false;
                         if (mListener != null) {
                             mListener.onError(e);
@@ -220,6 +229,7 @@ public abstract class ExecutorManager<T> implements ObservableExecutor<T>,
                 });
     }
 
+    @Nonnull
     public Optional<T> getCacheIfPresent() {
         return mExampleDescription.getCacheIfPresent(getCacheKey());
     }

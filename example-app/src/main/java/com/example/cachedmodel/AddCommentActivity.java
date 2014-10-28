@@ -27,6 +27,8 @@ import com.appunite.cache.ListenerCallback;
 import com.example.api.AddCommentExecutorManager;
 import com.example.api.model.ResponseComment;
 
+import javax.annotation.Nonnull;
+
 public class AddCommentActivity extends Activity {
 
     private TextView mCommentBody;
@@ -77,7 +79,7 @@ public class AddCommentActivity extends Activity {
         mProgressLayout.setVisibility(View.VISIBLE);
         mExecutorManager.register(new ListenerCallback<ResponseComment>() {
             @Override
-            public void onError(Throwable e) {
+            public void onError(@Nonnull Throwable e) {
                 mProgressLayout.setVisibility(View.GONE);
                 unregisterAddCommentExecutorManager();
                 new AlertDialog.Builder(AddCommentActivity.this)
@@ -87,7 +89,7 @@ public class AddCommentActivity extends Activity {
             }
 
             @Override
-            public void onNewData(ResponseComment data) {
+            public void onNewData(@Nonnull ResponseComment data) {
                 mProgressLayout.setVisibility(View.GONE);
                 unregisterAddCommentExecutorManager();
                 mCommentBody.setText(null);

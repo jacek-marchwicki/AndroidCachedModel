@@ -72,12 +72,18 @@ git fetch ssh://jenkins@$GERRIT_HOST:$GERRIT_PORT/$GERRIT_PROJECT $GERRIT_REFSPE
 
 cp /tmp/credentials.properties cachedmodel/credentials.properties || exit 1
 
-TASKS="build"
+TASKS="build uploadArchives"
+
+LIB_VERSION="$GERRIT_CHANGE_NUMBER.$GERRIT_PATCHSET_NUMBER-snapshot"
+if [ ${GERRIT_EVENT_TYPE} == "change-merged" ];
+then
+	LIB_VERSION="$GERRIT_CHANGE_NUMBER.$GERRIT_PATCHSET_NUMBER"
+fi
 
 ./gradlew --parallel \
 	--refresh-dependencies ${TASKS} \
 	--stacktrace \
-	--project-prop versionSuffix="$GERRIT_CHANGE_NUMBER.$GERRIT_PATCHSET_NUMBER"
+	--project-prop versionSuffix="$LIB_VERSION"
 
 OUT=$?
 
@@ -99,7 +105,7 @@ then
 			./gradlew --parallel --refresh-dependencies \
 				:Yapert:connectedCheck \
 				--stacktrace \
-				--project-prop versionSuffix="$GERRIT_CHANGE_NUMBER.$GERRIT_PATCHSET_NUMBER"
+				--project-prop versionSuffix="$LIB_VERSION"
 
 			# Ignore tests output
 			# OUT=$?
@@ -109,17 +115,6 @@ then
 
 	fi
 fi
-
-if [ $OUT -eq 0 ];
-then
-	if [ ${GERRIT_EVENT_TYPE} == "change-merged" ];
-	then
-		./gradlew uploadArchives \
-			--project-prop versionSuffix="$GERRIT_CHANGE_NUMBER.$GERRIT_PATCHSET_NUMBER"
-		OUT=$?
-	fi
-fi
-
 
 mkdir -p /tmp/build/cachedmodel
 mv cachedmodel/build/libs /tmp/build/cachedmodel/

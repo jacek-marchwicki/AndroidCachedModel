@@ -24,9 +24,10 @@ public class ResponseComment {
     @Nonnull
     private final String mPostGuid;
     @Nonnull
-    private Comment mComment;
+    private final Comment mComment;
 
-    public ResponseComment(@Nonnull String postGuid, @Nonnull Comment comment) {
+    public ResponseComment(@Nonnull String postGuid,
+                           @Nonnull Comment comment) {
         mPostGuid = checkNotNull(postGuid);
         mComment = checkNotNull(comment);
     }

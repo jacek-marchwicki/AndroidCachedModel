@@ -23,7 +23,8 @@ public class Comment {
     @Nullable
     private final String mBody;
 
-    public Comment(long id, @Nullable String body) {
+    public Comment(long id,
+                   @Nullable String body) {
         mId = id;
         mBody = body;
     }

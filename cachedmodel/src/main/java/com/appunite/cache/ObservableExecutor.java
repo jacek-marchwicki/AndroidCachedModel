@@ -16,8 +16,10 @@
 
 package com.appunite.cache;
 
+import javax.annotation.Nonnull;
+
 public interface ObservableExecutor<T> {
-    public void register(ListenerCallback<T> listener);
+    public void register(@Nonnull ListenerCallback<T> listener);
     public void unregister();
     public void unregisterIfRegistered();
 }

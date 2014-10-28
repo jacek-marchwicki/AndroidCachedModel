@@ -100,7 +100,7 @@ public class MainActivity extends Activity {
         mExecutorManager
                 .register(new ListenerCallback<ResponseComments>() {
                     @Override
-                    public void onError(Throwable e) {
+                    public void onError(@Nonnull Throwable e) {
                         mProgress.setVisibility(View.GONE);
                         mErrorView.setVisibility(View.VISIBLE);
                         mErrorView.setText(e.getMessage());
@@ -108,7 +108,7 @@ public class MainActivity extends Activity {
                     }
 
                     @Override
-                    public void onNewData(ResponseComments data) {
+                    public void onNewData(@Nonnull ResponseComments data) {
                         mProgress.setVisibility(View.GONE);
                         mErrorView.setVisibility(View.GONE);
                         mAdapter.swapData(data.getCommentList());

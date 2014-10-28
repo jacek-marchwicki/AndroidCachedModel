@@ -23,6 +23,7 @@ import com.appunite.cache.SyncExecutor;
 
 import java.util.concurrent.Callable;
 
+import javax.annotation.Nonnull;
 import javax.inject.Inject;
 
 import static com.google.common.base.Preconditions.checkNotNull;
@@ -30,17 +31,18 @@ import static com.google.common.base.Preconditions.checkState;
 
 public abstract class SimpleExecutorManager<T> implements ObservableExecutor<T> {
 
+    @Nonnull
     private final SyncExecutor mSyncExecutor;
 
     protected ListenerCallback<T> mListener;
 
     @Inject
-    protected SimpleExecutorManager(SyncExecutor syncExecutor) {
-        mSyncExecutor = syncExecutor;
+    protected SimpleExecutorManager(@Nonnull SyncExecutor syncExecutor) {
+        mSyncExecutor = checkNotNull(syncExecutor);
     }
 
     @Override
-    public void register(ListenerCallback<T> listener) {
+    public void register(@Nonnull ListenerCallback<T> listener) {
         checkNotNull(listener);
         checkState(mListener == null);
         mListener = listener;
@@ -68,7 +70,7 @@ public abstract class SimpleExecutorManager<T> implements ObservableExecutor<T> 
                 },
                 new SyncExecutor.OnError() {
                     @Override
-                    public void except(Exception e) {
+                    public void except(@Nonnull Exception e) {
                         afterFail(e);
                         if (mListener != null) {
                             mListener.onError(e);
@@ -81,12 +83,13 @@ public abstract class SimpleExecutorManager<T> implements ObservableExecutor<T> 
 
     }
 
+    @Nonnull
     protected abstract T execute() throws Exception;
 
-    protected void afterExecute(T data) {
+    protected void afterExecute(@Nonnull T data) {
     }
 
-    protected void afterFail(Exception e) {
+    protected void afterFail(@Nonnull Exception e) {
 
     }
 
@@ -101,9 +104,4 @@ public abstract class SimpleExecutorManager<T> implements ObservableExecutor<T> 
         mListener = null;
     }
 
-    public static void unregisterIfRegistered(ObservableExecutor<?> executor) {
-        if (executor != null) {
-            executor.unregisterIfRegistered();
-        }
-    }
 }

@@ -16,20 +16,23 @@
 
 package com.appunite.cache;
 
+import javax.annotation.Nonnull;
+
 public class ListenerCallbackAdapter<T> implements ListenerCallback<T> {
     private final static ListenerCallback<?> EMPTY = new ListenerCallbackAdapter<Object>() {
     };
 
+    @Nonnull
     @SuppressWarnings("unchecked")
     public static <X> ListenerCallback<X> getEmpty() {
         return (ListenerCallbackAdapter<X>) EMPTY;
     }
 
     @Override
-    public void onError(Throwable e) {
+    public void onError(@Nonnull Throwable e) {
     }
 
     @Override
-    public void onNewData(T data) {
+    public void onNewData(@Nonnull T data) {
     }
 }

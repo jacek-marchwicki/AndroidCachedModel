@@ -16,6 +16,10 @@
 
 package com.appunite.cache;
 
+import javax.annotation.Nonnull;
+
+import static com.google.common.base.Preconditions.checkNotNull;
+
 public class SyncScheduler implements Scheduler {
     private boolean mLoadedData = false;
 
@@ -23,7 +27,8 @@ public class SyncScheduler implements Scheduler {
     }
 
     @Override
-    public void schedule(final Runnable runnable) {
+    public void schedule(@Nonnull final Runnable runnable) {
+        checkNotNull(runnable);
         new Thread(new Runnable() {
             @Override
             public void run() {

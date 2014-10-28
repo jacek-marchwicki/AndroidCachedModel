@@ -29,6 +29,9 @@ import com.google.common.collect.Lists;
 import java.util.List;
 
 
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
+
 import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.base.Preconditions.checkState;
 
@@ -36,23 +39,26 @@ public class CommentsExecutorManager extends ExecutorManager<ResponseComments> {
 
     private String mPostGuid;
 
-    public CommentsExecutorManager(SyncExecutor syncExecutor, ExampleDescription exampleDescription) {
+    public CommentsExecutorManager(@Nonnull SyncExecutor syncExecutor,
+                                   @Nonnull ExampleDescription exampleDescription) {
         super(syncExecutor, exampleDescription);
     }
 
 
-    public CommentsExecutorManager withPostGuid(String postGuid) {
+    public CommentsExecutorManager withPostGuid(@Nonnull String postGuid) {
         mPostGuid = checkNotNull(postGuid);
         return this;
     }
 
+    @Nonnull
     @Override
     protected ResponseComments execute() throws Exception {
         return execute(null);
     }
 
+    @Nonnull
     @Override
-    protected ResponseComments execute(String nextToken) throws Exception {
+    protected ResponseComments execute(@Nullable String nextToken) throws Exception {
         checkState(mPostGuid != null);
 
         // This is normally done on server ;)
@@ -65,31 +71,34 @@ public class CommentsExecutorManager extends ExecutorManager<ResponseComments> {
             pos = 0;
         }
 
-        final List<Comment> posts = Lists.newArrayList();
+        final ImmutableList.Builder<Comment> posts = ImmutableList.builder();
         for (int i = 0; i < 10; ++i) {
             posts.add(new Comment(pos, "post: " + mPostGuid + ", comment: " + pos));
             pos++;
         }
 
-        return new ResponseComments(mPostGuid, posts, String.valueOf(pos));
+        return new ResponseComments(mPostGuid, posts.build(), String.valueOf(pos));
     }
 
     @Override
-    protected boolean hasMore(ResponseComments cache) {
+    protected boolean hasMore(@Nonnull ResponseComments cache) {
         return getNextToken(cache) != null;
     }
 
+    @Nullable
     @Override
-    protected String getNextToken(ResponseComments cache) {
+    protected String getNextToken(@Nonnull ResponseComments cache) {
         return cache.getNextToken();
     }
 
+    @Nonnull
     @Override
-    protected ResponseComments mergeData(ResponseComments previous, ResponseComments moreData) {
-        previous.append(moreData);
-        return previous;
+    protected ResponseComments mergeData(@Nonnull ResponseComments previous,
+                                         @Nonnull ResponseComments moreData) {
+        return ResponseComments.newWithAppended(previous, moreData);
     }
 
+    @Nonnull
     @Override
     protected CacheKey<ResponseComments> getCacheKey() {
         return ExampleDescription.forPostComments(mPostGuid);

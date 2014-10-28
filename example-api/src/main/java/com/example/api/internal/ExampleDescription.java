@@ -28,6 +28,7 @@ import com.google.common.base.Optional;
 
 import java.util.List;
 
+import javax.annotation.Nonnull;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
@@ -45,13 +46,13 @@ public class ExampleDescription {
     @Inject
     public ExampleDescription() {
         mCommandsDescription.addCommand(COMMENT_ADDED, new Command<ResponseComments, ResponseComment>() {
+            @Nonnull
             @Override
-            public Command.UpdateResult apply(ResponseComment parameter, ResponseComments object) {
+            public Command.UpdateResult<ResponseComments> apply(ResponseComment parameter, @Nonnull ResponseComments object) {
                 if (!Objects.equal(object.getPostGuid(), parameter.getPostGuid())) {
-                    return UpdateResult.UPDATE_NOT_REQUIRED;
+                    return UpdateResult.forUpdateNotRequired();
                 }
-                object.addComment(parameter.getComment());
-                return UpdateResult.UPDATED;
+                return UpdateResult.forUpdate(ResponseComments.newWithaddedComment(object, parameter.getComment()));
             }
         });
     }

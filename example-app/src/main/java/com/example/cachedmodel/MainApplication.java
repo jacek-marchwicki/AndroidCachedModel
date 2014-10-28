@@ -29,6 +29,8 @@ import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
+import javax.annotation.Nonnull;
+
 public class MainApplication extends Application {
 
     private SyncExecutor mSyncExecutor;
@@ -42,7 +44,7 @@ public class MainApplication extends Application {
         final Scheduler scheduler = new Scheduler() {
 
             @Override
-            public void schedule(Runnable runnable) {
+            public void schedule(@Nonnull Runnable runnable) {
                 handler.post(runnable);
             }
         };

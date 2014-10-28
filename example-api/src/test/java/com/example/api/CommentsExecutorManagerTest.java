@@ -88,8 +88,8 @@ public class CommentsExecutorManagerTest {
         verify(listener).onNewData(captor.capture());
 
         assertThat(captor.getValue(), is(notNullValue()));
-        assertThat(captor.getValue().getNextToken(), is(equalTo("20")));
         assertThat(captor.getValue().getCommentList(), hasSize(20));
+        assertThat(captor.getValue().getNextToken(), is(equalTo("20")));
         assertThat(captor.getValue().getCommentList().get(10).getBody(), is(equalTo("post: 123, comment: 10")));
 
         executorManager.unregister();
@@ -120,6 +120,33 @@ public class CommentsExecutorManagerTest {
         assertThat(captor.getValue().getCommentList().get(0).getBody(), is(equalTo("some")));
 
         executorManager.unregister();
+    }
+
+    @Test
+    public void testAddCommentAndLoadMore() throws Exception {
+        final ListenerCallback<ResponseComments> listener = mock(ListenerCallback.class);
+        final CommentsExecutorManager executorManager = mCommentsExecutorManager.withPostGuid("123");
+        executorManager.register(listener);
+
+        verify(listener).onNewData(any(ResponseComments.class));
+        reset(listener);
+
+        {
+            mAddCommentExecutorManager
+                    .withPostGuid("123")
+                    .withBody("some")
+                    .register(new ListenerCallbackAdapter<ResponseComment>());
+        }
+
+        verify(listener).onNewData(any(ResponseComments.class));
+        reset(listener);
+
+        executorManager.loadMore();
+
+
+        final ArgumentCaptor<ResponseComments> captor = ArgumentCaptor.forClass(ResponseComments.class);
+        verify(listener).onNewData(captor.capture());
+        assertThat(captor.getValue().getCommentList(), hasSize(21));
     }
 
     @Test

@@ -19,21 +19,25 @@ package com.appunite.cache;
 import com.google.common.base.MoreObjects;
 import com.google.common.base.Objects;
 
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
+
 import static com.google.common.base.Preconditions.checkNotNull;
 
 @SuppressWarnings("UnusedDeclaration")
 public final class CommandName<T, K> {
+    @Nonnull
     private final String mCommandName;
 
-    CommandName(String commandName) {
+    CommandName(@Nonnull String commandName) {
         mCommandName = commandName;
     }
-    public static <T, K> CommandName<T, K> of(String commandName) {
+    public static <T, K> CommandName<T, K> of(@Nonnull String commandName) {
         return new CommandName<>(checkNotNull(commandName));
     }
 
     @Override
-    public boolean equals(Object o) {
+    public boolean equals(@Nullable Object o) {
         if (this == o) return true;
         if (!(o instanceof CommandName)) return false;
 

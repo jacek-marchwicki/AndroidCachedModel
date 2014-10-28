@@ -35,6 +35,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
+import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
 import static com.google.common.base.Preconditions.checkNotNull;
@@ -50,16 +51,23 @@ public class CommandsDescription {
             }
         };
         public int version;
+        @Nonnull
         public CommandName<T, K> commandName;
+        @Nullable
         public K parameter;
 
-        public CommandToExecute(int version, CommandName<T, K> commandName, K parameter) {
+        public CommandToExecute(int version,
+                                @Nonnull CommandName<T, K> commandName,
+                                @Nullable K parameter) {
             this.version = version;
             this.commandName = commandName;
             this.parameter = parameter;
         }
 
-        public static <T> Predicate<? super CommandToExecute<?, ?>> matchingCommandsNames(final List<CommandName<T, ?>> commandsNames) {
+        @Nonnull
+        public static <T> Predicate<? super CommandToExecute<?, ?>> matchingCommandsNames(
+                @Nonnull final List<CommandName<T, ?>> commandsNames) {
+            checkNotNull(commandsNames);
             return new Predicate<CommandToExecute<?, ?>>() {
                 @Override
                 public boolean apply(@Nullable CommandToExecute<?, ?> input) {
@@ -76,6 +84,7 @@ public class CommandsDescription {
             };
         }
 
+        @Nonnull
         public static Predicate<? super CommandToExecute<?, ?>> matchingVersionGraterOrEqualTo(final int version) {
             return new Predicate<CommandToExecute<?, ?>>() {
                 @Override
@@ -85,7 +94,10 @@ public class CommandsDescription {
             };
         }
 
-        public static <T> Predicate<? super CommandToExecute<?, ?>> matchingCacheElement(final CacheElement<T> cacheElement) {
+        @Nonnull
+        public static <T> Predicate<? super CommandToExecute<?, ?>> matchingCacheElement(
+                @Nonnull final CacheElement<T> cacheElement) {
+            checkNotNull(cacheElement);
             return Predicates.and(matchingVersionGraterOrEqualTo(cacheElement.version), matchingCommandsNames(cacheElement.commands));
         }
 
@@ -112,13 +124,17 @@ public class CommandsDescription {
         }
 
         public int version;
+        @Nonnull
         public T object;
+        @Nonnull
         public List<CommandName<T, ?>> commands;
 
-        public CacheElement(int version, T object, List<CommandName<T, ?>> commands) {
+        public CacheElement(int version,
+                            @Nonnull T object,
+                            @Nonnull List<CommandName<T, ?>> commands) {
             this.version = version;
-            this.object = object;
-            this.commands = commands;
+            this.object = checkNotNull(object);
+            this.commands = checkNotNull(commands);
         }
 
         @Override
@@ -132,10 +148,12 @@ public class CommandsDescription {
     }
 
     private static class CacheHolder<T> {
+        @Nonnull
         Optional<CacheElement<T>> object;
+        @Nonnull
         List<CacheInvalidationListener<T>> references = Lists.newArrayList();
 
-        private CacheHolder(Optional<CacheElement<T>> object) {
+        private CacheHolder(@Nonnull Optional<CacheElement<T>> object) {
             this.object = object;
         }
 
@@ -162,22 +180,27 @@ public class CommandsDescription {
         }
     }
 
-    private HashMap<CommandName<?, ?>, Command<?,?>> mCommands = Maps.newHashMap();
-    private List<CommandToExecute<?, ?>> mToExecute = Lists.newArrayList();
+    @Nonnull
+    private final HashMap<CommandName<?, ?>, Command<?,?>> mCommands = Maps.newHashMap();
+    @Nonnull
+    private final List<CommandToExecute<?, ?>> mToExecute = Lists.newArrayList();
+    @Nonnull
     private Cache<Object, CacheElement<?>> mCache = CacheBuilder.newBuilder()
             .maximumSize(20)
             .expireAfterWrite(1, TimeUnit.MINUTES)
             .build();
-    private Map<CacheKey<?>, CacheHolder<?>> mHardReferenceStore = Maps.newHashMap();
+    @Nonnull
+    private final Map<CacheKey<?>, CacheHolder<?>> mHardReferenceStore = Maps.newHashMap();
 
     public CommandsDescription() {
     }
 
-    public <T, K> void addCommand(CommandName<T, K> commandName, Command<T, K> command) {
+    public <T, K> void addCommand(@Nonnull CommandName<T, K> commandName, Command<T, K> command) {
+        checkNotNull(command);
         mCommands.put(commandName, command);
     }
 
-    public <T, K> void invalidate(CommandName<T, K> commandName, K parameter) {
+    public <T, K> void invalidate(@Nonnull CommandName<T, K> commandName, @Nullable K parameter) {
         checkNotNull(commandName);
         final Command<?, ?> command = mCommands.get(commandName);
         checkState(command != null, "You did not defined command: " + commandName);
@@ -199,8 +222,8 @@ public class CommandsDescription {
         }
     }
 
-    public <T> void register(CacheKey<T> cacheKey,
-                                CacheInvalidationListener<T> listener) {
+    public <T> void register(@Nonnull CacheKey<T> cacheKey,
+                             @Nonnull CacheInvalidationListener<T> listener) {
         checkNotNull(cacheKey);
         checkNotNull(listener);
 
@@ -208,22 +231,32 @@ public class CommandsDescription {
         cacheHolder.references.add(listener);
     }
 
+    @Nonnull
     @SuppressWarnings("unchecked")
-    private <T, K> Command<T, K> getCommand(CommandToExecute<T, K> commandToExecute) {
-        return (Command<T, K>) mCommands.get(commandToExecute.commandName);
+    private <T, K> Command<T, K> getCommand(@Nonnull CommandToExecute<T, K> commandToExecute) {
+        checkNotNull(commandToExecute);
+        return checkNotNull((Command<T, K>) mCommands.get(commandToExecute.commandName));
     }
 
+    @Nullable
     @SuppressWarnings("unchecked")
-    private <T> CacheHolder<T> getCacheHolder(CacheKey<T> cacheKey) {
+    private <T> CacheHolder<T> getCacheHolder(@Nonnull CacheKey<T> cacheKey) {
+        checkNotNull(cacheKey);
         return (CacheHolder<T>) mHardReferenceStore.get(cacheKey);
     }
 
-    private <T, K> Command.UpdateResult executeCommand(T object, CommandToExecute<T, K> commandToExecute) {
+    @Nonnull
+    private <T, K> Command.UpdateResult<T> executeCommand(@Nonnull T object,
+                                                          @Nonnull CommandToExecute<T, K> commandToExecute) {
+        checkNotNull(object);
+        checkNotNull(commandToExecute);
         final Command<T, K> command = getCommand(commandToExecute);
         return command.apply(commandToExecute.parameter, object);
     }
 
-    private <T> CacheHolder<T> getCacheHolderOrCreate(CacheKey<T> cacheKey) {
+    @Nonnull
+    private <T> CacheHolder<T> getCacheHolderOrCreate(@Nonnull CacheKey<T> cacheKey) {
+        checkNotNull(cacheKey);
         CacheHolder<T> cacheHolder = getCacheHolder(cacheKey);
         if (cacheHolder == null) {
             final Optional<CacheElement<T>> cacheIfPresent = getCacheElementIfPresent(cacheKey);
@@ -233,6 +266,7 @@ public class CommandsDescription {
         return cacheHolder;
     }
 
+    @Nonnull
     public <T> Optional<CacheElement<T>> getCacheElementIfPresent(CacheKey<T> cacheKey) {
         checkNotNull(cacheKey);
         final Optional<CacheElement<T>> optCacheElement;
@@ -246,21 +280,25 @@ public class CommandsDescription {
         return optCacheElement.isPresent() ? recalculate(cacheKey, optCacheElement.get()) : optCacheElement;
     }
 
+    @Nullable
     @SuppressWarnings("unchecked")
-    private <T> CacheElement<T> getCacheElement(CacheKey<T> cacheKey) {
+    private <T> CacheElement<T> getCacheElement(@Nonnull CacheKey<T> cacheKey) {
+        checkNotNull(cacheKey);
         return (CacheElement<T>) mCache.getIfPresent(cacheKey);
     }
 
+    @Nonnull
     private <T> Optional<CacheElement<T>> recalculate(CacheKey<T> cacheKey, CacheElement<T> cacheElement) {
-
+        checkNotNull(cacheKey);
+        checkNotNull(cacheElement);
         final ImmutableList<CommandToExecute<T, ?>> commandsToExecutes = getCommandsToExecute(cacheElement);
 
         boolean hasChanged = false;
 
-        final T object = cacheElement.object;
+        T object = cacheElement.object;
         for (CommandToExecute<T, ?> commandToExecute : commandsToExecutes) {
-            final Command.UpdateResult result = executeCommand(object, commandToExecute);
-            if (Command.UpdateResult.INVALIDATE.equals(result)) {
+            final Command.UpdateResult<T> result = executeCommand(object, commandToExecute);
+            if (result.isInvalidate()) {
 
                 final CacheHolder<T> cacheHolder = getCacheHolder(cacheKey);
                 if (cacheHolder != null) {
@@ -272,7 +310,8 @@ public class CommandsDescription {
                     cacheHolder.onInvalidated();
                 }
                 return Optional.absent();
-            } else if (Command.UpdateResult.UPDATED.equals(result)) {
+            } else if (result.isUpdate()) {
+                object = result.getParam();
                 hasChanged = true;
             }
         }
@@ -281,6 +320,7 @@ public class CommandsDescription {
         if (hasChanged) {
             final CacheHolder<T> cacheHolder = getCacheHolder(cacheKey);
             if (cacheHolder != null) {
+                cacheHolder.object.get().object = object;
                 cacheHolder.onChanged(object);
             }
         }
@@ -288,8 +328,10 @@ public class CommandsDescription {
         return Optional.of(cacheElement);
     }
 
+    @Nonnull
     @SuppressWarnings("unchecked")
-    private <T> ImmutableList<CommandToExecute<T, ?>> getCommandsToExecute(CacheElement<T> cacheElement) {
+    private <T> ImmutableList<CommandToExecute<T, ?>> getCommandsToExecute(@Nonnull CacheElement<T> cacheElement) {
+        checkNotNull(cacheElement);
         final ImmutableList<CommandToExecute<?, ?>> commandToExecutes = FluentIterable
                 .from(mToExecute)
                 .filter(CommandToExecute.matchingCacheElement(cacheElement))
@@ -297,7 +339,8 @@ public class CommandsDescription {
         return (ImmutableList<CommandToExecute<T, ?>>)(ImmutableList<?>)commandToExecutes;
     }
 
-    public <T> Optional<T> getCacheIfPresent(CacheKey<T> cacheKey) {
+    @Nonnull
+    public <T> Optional<T> getCacheIfPresent(@Nonnull CacheKey<T> cacheKey) {
         checkNotNull(cacheKey);
         return getCacheElementIfPresent(cacheKey)
                 .transform(CacheElement.<T>toObject());
@@ -305,8 +348,9 @@ public class CommandsDescription {
 
     int mVersion = 1;
 
-    public <T> void putCache(CacheKey<T> cacheKey, T object,
-                             List<CommandName<T, ?>> commands) {
+    public <T> void putCache(@Nonnull CacheKey<T> cacheKey,
+                             @Nonnull T object,
+                             @Nonnull List<CommandName<T, ?>> commands) {
         checkNotNull(cacheKey);
         checkNotNull(object);
         checkNotNull(commands);
@@ -320,8 +364,10 @@ public class CommandsDescription {
         }
     }
 
-    public <T> void unregister(CacheKey<T> cacheKey, CacheInvalidationListener<T> listener) {
+    public <T> void unregister(@Nonnull CacheKey<T> cacheKey,
+                               @Nonnull CacheInvalidationListener<T> listener) {
         checkNotNull(cacheKey);
+        checkNotNull(listener);
 
         final CacheHolder<T> cacheHolder = getCacheHolder(cacheKey);
         checkState(cacheHolder != null, "Already unregistered all listeners");

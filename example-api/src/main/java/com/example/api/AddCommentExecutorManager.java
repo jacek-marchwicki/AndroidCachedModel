@@ -25,6 +25,8 @@ import com.example.api.model.ResponseComment;
 import java.io.IOException;
 import java.util.Random;
 
+import javax.annotation.Nonnull;
+
 import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.base.Preconditions.checkState;
 
@@ -35,21 +37,23 @@ public class AddCommentExecutorManager extends SimpleExecutorManager<ResponseCom
 
     private final ExampleDescription mExampleDescription;
 
-    public AddCommentExecutorManager(SyncExecutor syncExecutor, ExampleDescription exampleDescription) {
+    public AddCommentExecutorManager(@Nonnull SyncExecutor syncExecutor,
+                                     @Nonnull ExampleDescription exampleDescription) {
         super(syncExecutor);
-        mExampleDescription = exampleDescription;
+        mExampleDescription = checkNotNull(exampleDescription);
     }
 
-    public AddCommentExecutorManager withPostGuid(String postGuid) {
+    public AddCommentExecutorManager withPostGuid(@Nonnull String postGuid) {
         mPostGuid = checkNotNull(postGuid);
         return this;
     }
 
-    public AddCommentExecutorManager withBody(String body) {
+    public AddCommentExecutorManager withBody(@Nonnull String body) {
         mBody = checkNotNull(body);
         return this;
     }
 
+    @Nonnull
     @Override
     protected ResponseComment execute() throws Exception {
         checkState(mPostGuid != null);
@@ -63,7 +67,7 @@ public class AddCommentExecutorManager extends SimpleExecutorManager<ResponseCom
     }
 
     @Override
-    protected void afterExecute(ResponseComment data) {
+    protected void afterExecute(@Nonnull ResponseComment data) {
         super.afterExecute(data);
         mExampleDescription.invalidate(ExampleDescription.COMMENT_ADDED, data);
     }

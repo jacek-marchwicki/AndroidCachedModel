@@ -16,7 +16,9 @@
 
 package com.appunite.cache;
 
+import javax.annotation.Nonnull;
+
 public interface CacheInvalidationListener<T> {
-    public void onChanged(T object);
+    public void onChanged(@Nonnull T object);
     public void onInvalidated();
 }

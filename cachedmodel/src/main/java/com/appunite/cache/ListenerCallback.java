@@ -16,7 +16,9 @@
 
 package com.appunite.cache;
 
+import javax.annotation.Nonnull;
+
 public interface ListenerCallback<T> {
-    public void onError(Throwable e);
-    public void onNewData(T data);
+    public void onError(@Nonnull Throwable e);
+    public void onNewData(@Nonnull T data);
 }

@@ -16,6 +16,8 @@
 
 package com.example.api.model;
 
+import com.google.common.collect.ImmutableList;
+
 import java.util.List;
 
 import javax.annotation.Nonnull;
@@ -27,32 +29,42 @@ import static com.google.common.base.Preconditions.checkState;
 public class ResponseComments {
 
     @Nonnull
-    private String mPostGuid;
+    private final String mPostGuid;
 
     @Nonnull
-    private List<Comment> mCommentList;
+    private ImmutableList<Comment> mCommentList;
 
     @Nullable
     private String mNextToken;
 
     public ResponseComments(@Nonnull String postGuid,
-                            @Nonnull List<Comment> commentList,
+                            @Nonnull ImmutableList<Comment> commentList,
                             @Nullable String nextToken) {
         mPostGuid = checkNotNull(postGuid);
         mCommentList = checkNotNull(commentList);
         mNextToken = nextToken;
     }
 
-    public void append(@Nonnull ResponseComments moreData) {
+    public static ResponseComments newWithAppended(@Nonnull ResponseComments oldData,
+                                                   @Nonnull ResponseComments moreData) {
         checkNotNull(moreData);
-        checkState(mPostGuid.equals(moreData.mPostGuid));
-        mCommentList.addAll(moreData.mCommentList);
-        mNextToken = moreData.mNextToken;
+        checkState(oldData.mPostGuid.equals(moreData.mPostGuid));
+
+        final ImmutableList<Comment> build = ImmutableList.<Comment>builder()
+                .addAll(oldData.mCommentList)
+                .addAll(moreData.mCommentList)
+                .build();
+        return new ResponseComments(oldData.mPostGuid, build, moreData.mNextToken);
     }
 
-    public void addComment(@Nonnull Comment comment) {
+    public static ResponseComments newWithaddedComment(@Nonnull ResponseComments oldData,
+                                                       @Nonnull Comment comment) {
         checkNotNull(comment);
-        mCommentList.add(0, comment);
+        final ImmutableList<Comment> build = ImmutableList.<Comment>builder()
+                .add(comment)
+                .addAll(oldData.mCommentList)
+                .build();
+        return new ResponseComments(oldData.mPostGuid, build, oldData.mNextToken);
     }
 
     @Nullable

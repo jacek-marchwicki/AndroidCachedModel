@@ -16,24 +16,28 @@
 
 package com.appunite.cache;
 
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
+
 import static com.google.common.base.Preconditions.checkNotNull;
 
 @SuppressWarnings("UnusedDeclaration")
 public class CacheKey<T> {
 
+    @Nonnull
     private final String mCacheKey;
 
-    CacheKey(String cacheKey) {
+    CacheKey(@Nonnull String cacheKey) {
         mCacheKey = checkNotNull(cacheKey);
     }
 
-    public static <T> CacheKey<T> of(String cacheKey) {
+    public static <T> CacheKey<T> of(@Nonnull String cacheKey) {
         checkNotNull(cacheKey);
         return new CacheKey<>(cacheKey);
     }
 
     @Override
-    public boolean equals(Object o) {
+    public boolean equals(@Nullable Object o) {
         if (this == o) return true;
         if (!(o instanceof CacheKey)) return false;
 
